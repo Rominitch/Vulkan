@@ -171,11 +171,22 @@ public:
 		// Fill mode non solid is required for wireframe display
 		if (deviceFeatures.fillModeNonSolid) {
 			enabledFeatures.fillModeNonSolid = VK_TRUE;
-		};
+		}
 		// Pipeline statistics
 		if (deviceFeatures.pipelineStatisticsQuery) {
 			enabledFeatures.pipelineStatisticsQuery = VK_TRUE;
-		};
+		}
+
+		// Enable compressed textures support
+		if(deviceFeatures.textureCompressionBC) {
+			enabledFeatures.textureCompressionBC = VK_TRUE;
+		}
+		if(deviceFeatures.textureCompressionASTC_LDR) {
+			enabledFeatures.textureCompressionASTC_LDR = VK_TRUE;
+		}
+		if(deviceFeatures.textureCompressionETC2) {
+			enabledFeatures.textureCompressionETC2 = VK_TRUE;
+		}
 	}
 
 	// Setup pool and buffer for storing pipeline statistics results
