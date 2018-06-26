@@ -536,7 +536,7 @@ public:
 	virtual void OnUpdateUIOverlay(vks::UIOverlay *overlay)
 	{
 		if (overlay->header("Settings")) {
-			if (overlay->inputFloat("Tessellation level", &uboTessControl.tessLevel, 0.25f, 2)) {
+			if (overlay->inputFloat("Tessellation level", &uboTessControl.tessLevel, 0.25f, "%.2f")) {
 				updateUniformBuffers();
 			}
 			if (deviceFeatures.fillModeNonSolid) {

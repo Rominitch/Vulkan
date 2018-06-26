@@ -533,10 +533,10 @@ public:
 			if (overlay->checkBox("Tessellation displacement", &displacement)) {
 				updateUniformBuffers();
 			}
-			if (overlay->inputFloat("Strength", &uboTessEval.tessStrength, 0.025f, 3)) {
+			if (overlay->inputFloat("Strength", &uboTessEval.tessStrength, 0.025f, "%.3f")) {
 				updateUniformBuffers();
 			}
-			if (overlay->inputFloat("Level", &uboTessControl.tessLevel, 0.5f, 2)) {
+			if (overlay->inputFloat("Level", &uboTessControl.tessLevel, 0.5f, "%.2f")) {
 				updateUniformBuffers();
 			}
 			if (deviceFeatures.fillModeNonSolid) {

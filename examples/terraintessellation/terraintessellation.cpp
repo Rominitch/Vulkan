@@ -939,7 +939,7 @@ public:
 			if (overlay->checkBox("Tessellation", &tessellation)) {
 				updateUniformBuffers();
 			}
-			if (overlay->inputFloat("Factor", &uboTess.tessellationFactor, 0.05f, 2)) {
+			if (overlay->inputFloat("Factor", &uboTess.tessellationFactor, 0.05f, "%.2f")) {
 				updateUniformBuffers();
 			}
 			if (deviceFeatures.fillModeNonSolid) {

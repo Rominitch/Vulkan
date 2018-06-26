@@ -328,7 +328,7 @@ public:
 	virtual void OnUpdateUIOverlay(vks::UIOverlay *overlay)
 	{
 		if (overlay->header("Settings")) {
-			if (overlay->inputFloat("Outline width", &uboVS.outlineWidth, 0.05f, 2)) {
+			if (overlay->inputFloat("Outline width", &uboVS.outlineWidth, 0.05f, "%.2f")) {
 				updateUniformBuffers();
 			}
 		}

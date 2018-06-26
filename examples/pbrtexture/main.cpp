@@ -1446,10 +1446,10 @@ public:
 	virtual void OnUpdateUIOverlay(vks::UIOverlay *overlay)
 	{
 		if (overlay->header("Settings")) {
-			if (overlay->inputFloat("Exposure", &uboParams.exposure, 0.1f, 2)) {
+			if (overlay->inputFloat("Exposure", &uboParams.exposure, 0.1f, "%.2f")) {
 				updateParams();
 			}
-			if (overlay->inputFloat("Gamma", &uboParams.gamma, 0.1f, 2)) {
+			if (overlay->inputFloat("Gamma", &uboParams.gamma, 0.1f, "%.2f")) {
 				updateParams();
 			}
 			if (overlay->checkBox("Skybox", &displaySkybox)) {

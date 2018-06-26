@@ -95,6 +95,8 @@ public:
 	// Initialize styles, keys, etc.
 	void init(float width, float height)
 	{
+        ImGui::CreateContext();
+
 		// Color scheme
 		ImGuiStyle& style = ImGui::GetStyle();
 		style.Colors[ImGuiCol_TitleBg] = ImVec4(1.0f, 0.0f, 0.0f, 0.6f);
@@ -106,6 +108,11 @@ public:
 		ImGuiIO& io = ImGui::GetIO();
 		io.DisplaySize = ImVec2(width, height);
 		io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
+
+        // Remove default ini file
+        // Currently we need to remove it because it's impossible to reload properly.
+        // When bug will be fixed: we need to use ini file based on same project name (avoid conflict) ? or never saved ? 
+        io.IniFilename = NULL;
 	}
 
 	// Initialize all Vulkan resources used by the ui
@@ -362,10 +369,10 @@ public:
 		ImGui::PlotLines("Frame Times", &uiSettings.frameTimes[0], 50, 0, "", uiSettings.frameTimeMin, uiSettings.frameTimeMax, ImVec2(0, 80));
 
 		ImGui::Text("Camera");
-		ImGui::InputFloat3("position", &example->camera.position.x, 2);
-		ImGui::InputFloat3("rotation", &example->camera.rotation.x, 2);
+		ImGui::InputFloat3("position", &example->camera.position.x, "%.2f");
+		ImGui::InputFloat3("rotation", &example->camera.rotation.x, "%.2f");
 
-		ImGui::SetNextWindowSize(ImVec2(200, 200), ImGuiSetCond_FirstUseEver);
+		ImGui::SetNextWindowSize(ImVec2(200, 200), ImGuiCond_FirstUseEver);
 		ImGui::Begin("Example settings");
 		ImGui::Checkbox("Render models", &uiSettings.displayModels);
 		ImGui::Checkbox("Display logos", &uiSettings.displayLogos);
@@ -374,8 +381,8 @@ public:
 		ImGui::SliderFloat("Light speed", &uiSettings.lightSpeed, 0.1f, 1.0f);
 		ImGui::End();
 
-		ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiSetCond_FirstUseEver);
-		ImGui::ShowTestWindow();
+		ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiCond_FirstUseEver);
+		ImGui::ShowDemoWindow();
 
 		// Render to generate draw buffers
 		ImGui::Render();

@@ -990,7 +990,7 @@ public:
 				updateUniformBuffers();
 				buildDeferredCommandBuffer();
 			}
-			if (overlay->inputFloat("Exposure", &uboParams.exposure, 0.025f, 3)) {
+			if (overlay->inputFloat("Exposure", &uboParams.exposure, 0.025f, "%.3f")) {
 				updateParams();
 			}
 			if (overlay->checkBox("Bloom", &bloom)) {

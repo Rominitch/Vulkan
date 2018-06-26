@@ -28,6 +28,8 @@ namespace vks
 #endif
 
 		// Init ImGui
+        ImGui::CreateContext();
+
 		// Color scheme
 		ImGuiStyle& style = ImGui::GetStyle();
 		style.Colors[ImGuiCol_TitleBg] = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
@@ -42,6 +44,11 @@ namespace vks
 		ImGuiIO& io = ImGui::GetIO();
 		io.DisplaySize = ImVec2((float)(createInfo.width), (float)(createInfo.height));
 		io.FontGlobalScale = scale;
+
+        // Remove default ini file
+        // Currently we need to remove it because it's impossible to reload properly.
+        // When bug will be fixed: we need to use ini file based on same project name (avoid conflict) ? or never saved ? 
+        io.IniFilename = NULL;
 
 		cmdBuffers.resize(createInfo.framebuffers.size());
 		prepareResources();
@@ -584,9 +591,9 @@ namespace vks
 		return res;
 	}
 
-	bool UIOverlay::inputFloat(const char *caption, float *value, float step, uint32_t precision)
+	bool UIOverlay::inputFloat(const char *caption, float *value, float step, const char* format)
 	{
-		return ImGui::InputFloat(caption, value, step, step * 10.0f, precision);
+		return ImGui::InputFloat(caption, value, step, step * 10.0f, format);
 	}
 
 	bool UIOverlay::sliderFloat(const char* caption, float* value, float min, float max)

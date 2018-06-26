@@ -920,7 +920,7 @@ public:
 			if (overlay->checkBox("Bloom", &bloom)) {
 				buildCommandBuffers();
 			}
-			if (overlay->inputFloat("Scale", &ubos.blurParams.blurScale, 0.1f, 2)) {
+			if (overlay->inputFloat("Scale", &ubos.blurParams.blurScale, 0.1f, "%.2f")) {
 				updateUniformBuffersBlur();
 			}
 		}
