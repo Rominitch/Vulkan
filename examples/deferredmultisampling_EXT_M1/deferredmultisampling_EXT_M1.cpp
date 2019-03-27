@@ -127,6 +127,9 @@ public:
 		VkRenderPass renderPass;
 	} offScreenFrameBuf;
 	
+    float move = 0.0f;
+    bool enableInvViewport = true;
+
 	// One sampler for the frame buffer color attachments
 	VkSampler colorSampler;
 
@@ -137,7 +140,7 @@ public:
 
 	VulkanExample() : VulkanExampleBase(ENABLE_VALIDATION)
 	{
-		title = "Multi sampled deferred shading";
+		title = "Multi sampled deferred shading EXT_MAINTENANCE1";
 		camera.type = Camera::CameraType::firstperson;
 		camera.movementSpeed = 5.0f;
 #ifndef __ANDROID__
@@ -148,6 +151,9 @@ public:
 		camera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 256.0f);
 		paused = true;
 		settings.overlay = true;
+
+        // Enable extensions
+        enabledDeviceExtensions.push_back(VK_KHR_MAINTENANCE1_EXTENSION_NAME);
 	}
 
 	~VulkanExample()
@@ -461,7 +467,7 @@ public:
 
 		VkCommandBufferBeginInfo cmdBufInfo = vks::initializers::commandBufferBeginInfo();
 
-		// Clear values for all attachments written in the fragment sahder
+		// Clear values for all attachments written in the fragment shader
 		std::array<VkClearValue,4> clearValues;
 		clearValues[0].color = clearValues[1].color = { { 0.0f, 0.0f, 0.0f, 0.0f } };
 		clearValues[2].color = { { 0.0f, 0.0f, 0.0f, 0.0f } };
@@ -532,7 +538,17 @@ public:
 
 			vkCmdBeginRenderPass(drawCmdBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-			VkViewport viewport = vks::initializers::viewport((float)width, (float)height, 0.0f, 1.0f);
+            float factor = enableInvViewport ? -1.0f : 1.0f;
+            glm::vec2 resolution((float)width, (float)height);
+            VkViewport viewport
+            {
+                0.0f,         
+                move,          // 
+                resolution.x, 
+                resolution.y * factor, // USE NEGATIVE 
+                0.0f, 1.0f
+            };
+
 			vkCmdSetViewport(drawCmdBuffers[i], 0, 1, &viewport);
 
 			VkRect2D scissor = vks::initializers::rect2D(width, height, 0, 0);
@@ -540,6 +556,7 @@ public:
 
 			vkCmdBindDescriptorSets(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayouts.deferred, 0, 1, &descriptorSet, 0, nullptr);
 
+            // TODO: Update with negative viewport when working !
 			if (debugDisplay)
 			{
 				vkCmdBindPipeline(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.debug);
@@ -552,7 +569,7 @@ public:
 				vkCmdSetViewport(drawCmdBuffers[i], 0, 1, &viewport);
 			}
 
-			camera.updateAspectRatio((float)viewport.width / (float)viewport.height);
+			camera.updateAspectRatio(resolution.x / resolution.y);
 
 			// Final composition as full screen quad
 			vkCmdBindPipeline(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, useMSAA ? pipelines.deferred : pipelines.deferredNoMSAA);
@@ -934,8 +951,8 @@ public:
 		specializationInfo.pData = &specializationData;
 
 		// With MSAA
-		shaderStages[0] = loadShader(getAssetPath() + "shaders/deferredmultisampling/deferred.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
-		shaderStages[1] = loadShader(getAssetPath() + "shaders/deferredmultisampling/deferred.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
+		shaderStages[0] = loadShader(getAssetPath() + "shaders/deferredmultisampling_EXT_M1/deferred.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
+		shaderStages[1] = loadShader(getAssetPath() + "shaders/deferredmultisampling_EXT_M1/deferred.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
 		shaderStages[1].pSpecializationInfo = &specializationInfo;
 		VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.deferred));
 
@@ -945,16 +962,16 @@ public:
 
 		// Debug display pipeline
 		specializationData = sampleCount;
-		shaderStages[0] = loadShader(getAssetPath() + "shaders/deferredmultisampling/debug.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
-		shaderStages[1] = loadShader(getAssetPath() + "shaders/deferredmultisampling/debug.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
+		shaderStages[0] = loadShader(getAssetPath() + "shaders/deferredmultisampling_EXT_M1/debug.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
+		shaderStages[1] = loadShader(getAssetPath() + "shaders/deferredmultisampling_EXT_M1/debug.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
 		shaderStages[1].pSpecializationInfo = &specializationInfo;
 		VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.debug));
 		
 		// Offscreen scene rendering pipeline
 		pipelineCreateInfo.pVertexInputState = &vertices.inputState;
 
-		shaderStages[0] = loadShader(getAssetPath() + "shaders/deferredmultisampling/mrt.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
-		shaderStages[1] = loadShader(getAssetPath() + "shaders/deferredmultisampling/mrt.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
+		shaderStages[0] = loadShader(getAssetPath() + "shaders/deferredmultisampling_EXT_M1/mrt.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
+		shaderStages[1] = loadShader(getAssetPath() + "shaders/deferredmultisampling_EXT_M1/mrt.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
 
 		//rasterizationState.polygonMode = VK_POLYGON_MODE_LINE;
 		//rasterizationState.lineWidth = 2.0f;
@@ -1166,6 +1183,15 @@ public:
 				buildCommandBuffers();
 				updateUniformBuffersScreen();
 			}
+
+            if(overlay->checkBox("Use inverted viewport", &enableInvViewport)) {
+                buildCommandBuffers();
+                updateUniformBuffersScreen();
+            }
+            if (overlay->sliderFloat("Viewport Y:", &move, -2.0f *(float)height, 2.0f *(float)height)) {
+                buildCommandBuffers();
+                updateUniformBuffersScreen();
+            }
 			if (overlay->checkBox("MSAA", &useMSAA)) {
 				buildCommandBuffers();
 			}
