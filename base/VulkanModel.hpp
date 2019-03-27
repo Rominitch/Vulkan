@@ -121,7 +121,8 @@ namespace vks
 		};
 		std::vector<ModelPart> parts;
 
-		static const int defaultFlags = aiProcess_FlipWindingOrder | aiProcess_Triangulate | aiProcess_PreTransformVertices | aiProcess_CalcTangentSpace | aiProcess_GenSmoothNormals;
+		static const int defaultFlags    = aiProcess_FlipWindingOrder | aiProcess_Triangulate | aiProcess_PreTransformVertices | aiProcess_CalcTangentSpace | aiProcess_GenSmoothNormals;
+        static const int defaultCCWFlags = aiProcess_Triangulate | aiProcess_PreTransformVertices | aiProcess_CalcTangentSpace | aiProcess_GenSmoothNormals;
 
 		struct Dimension
 		{
@@ -153,7 +154,7 @@ namespace vks
 		* @param copyQueue Queue used for the memory staging copy commands (must support transfer)
 		* @param (Optional) flags ASSIMP model loading flags
 		*/
-		bool loadFromFile(const std::string& filename, vks::VertexLayout layout, vks::ModelCreateInfo *createInfo, vks::VulkanDevice *device, VkQueue copyQueue, const int flags = defaultFlags)
+		bool loadFromFile(const std::string& filename, vks::VertexLayout layout, vks::ModelCreateInfo *createInfo, vks::VulkanDevice *device, VkQueue copyQueue, const int flags = defaultFlags, const bool invertY = true)
 		{
 			this->device = device->logicalDevice;
 
@@ -211,6 +212,9 @@ namespace vks
 				vertexCount = 0;
 				indexCount = 0;
 
+                // Compute inversion factor
+                const float factor = invertY ? -1.0f : 1.0f;
+
 				// Load meshes
 				for (unsigned int i = 0; i < pScene->mNumMeshes; i++)
 				{
@@ -240,12 +244,12 @@ namespace vks
 							switch (component) {
 							case VERTEX_COMPONENT_POSITION:
 								vertexBuffer.push_back(pPos->x * scale.x + center.x);
-								vertexBuffer.push_back(-pPos->y * scale.y + center.y);
+								vertexBuffer.push_back(pPos->y * scale.y * factor + center.y);
 								vertexBuffer.push_back(pPos->z * scale.z + center.z);
 								break;
 							case VERTEX_COMPONENT_NORMAL:
 								vertexBuffer.push_back(pNormal->x);
-								vertexBuffer.push_back(-pNormal->y);
+								vertexBuffer.push_back(pNormal->y * factor);
 								vertexBuffer.push_back(pNormal->z);
 								break;
 							case VERTEX_COMPONENT_UV:
@@ -387,10 +391,10 @@ namespace vks
 		* @param copyQueue Queue used for the memory staging copy commands (must support transfer)
 		* @param (Optional) flags ASSIMP model loading flags
 		*/
-		bool loadFromFile(const std::string& filename, vks::VertexLayout layout, float scale, vks::VulkanDevice *device, VkQueue copyQueue, const int flags = defaultFlags)
+		bool loadFromFile(const std::string& filename, vks::VertexLayout layout, float scale, vks::VulkanDevice *device, VkQueue copyQueue, const int flags = defaultFlags, const bool invertY=true)
 		{
 			vks::ModelCreateInfo modelCreateInfo(scale, 1.0f, 0.0f);
-			return loadFromFile(filename, layout, &modelCreateInfo, device, copyQueue, flags);
+			return loadFromFile(filename, layout, &modelCreateInfo, device, copyQueue, flags, invertY);
 		}
 	};
 };

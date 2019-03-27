@@ -56,6 +56,7 @@ set(EXAMPLES
 	debugmarker
 	deferred
 	deferredmultisampling
+    deferredmultisampling_EXT_M1
 	deferredshadows
 	descriptorsets
 	displacement
