@@ -20,6 +20,8 @@
 #define KEY_S 0x53
 #define KEY_D 0x44
 #define KEY_P 0x50
+#define KEY_Q 0x51
+#define KEY_Z 0x5A
 #define KEY_SPACE 0x20
 #define KEY_KPADD 0x6B
 #define KEY_KPSUB 0x6D

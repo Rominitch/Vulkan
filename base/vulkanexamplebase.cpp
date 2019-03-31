@@ -1162,19 +1162,37 @@ void VulkanExampleBase::handleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 		{
 			switch (wParam)
 			{
-			case KEY_W:
-				camera.keys.up = true;
-				break;
-			case KEY_S:
-				camera.keys.down = true;
-				break;
-			case KEY_A:
-				camera.keys.left = true;
-				break;
-			case KEY_D:
-				camera.keys.right = true;
-				break;
+            case KEY_S:
+                camera.keys.down = true;
+                break;
+            case KEY_D:
+                camera.keys.right = true;
+                break;
 			}
+            if(AZERTY_keyboard)
+            {
+                switch(wParam)
+                {
+                case KEY_Z:
+                    camera.keys.up = true;
+                    break;
+                case KEY_Q:
+                    camera.keys.left = true;
+                    break;
+                }
+            }
+            else
+            {
+                switch(wParam)
+                {
+                case KEY_W:
+                    camera.keys.up = true;
+                    break;
+                case KEY_A:
+                    camera.keys.left = true;
+                    break;
+                }
+            }
 		}
 
 		keyPressed((uint32_t)wParam);
@@ -1184,19 +1202,37 @@ void VulkanExampleBase::handleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 		{
 			switch (wParam)
 			{
-			case KEY_W:
-				camera.keys.up = false;
-				break;
 			case KEY_S:
 				camera.keys.down = false;
-				break;
-			case KEY_A:
-				camera.keys.left = false;
 				break;
 			case KEY_D:
 				camera.keys.right = false;
 				break;
 			}
+            if(AZERTY_keyboard)
+            {
+                switch(wParam)
+                {
+                case KEY_Z:
+                    camera.keys.up = false;
+                    break;
+                case KEY_Q:
+                    camera.keys.left = false;
+                    break;
+                }
+            }
+            else
+            {
+                switch(wParam)
+                {
+                case KEY_W:
+                    camera.keys.up = false;
+                    break;
+                case KEY_A:
+                    camera.keys.left = false;
+                    break;
+                }
+            }
 		}
 		break;
 	case WM_LBUTTONDOWN:
@@ -2222,7 +2258,7 @@ void VulkanExampleBase::handleMouseMove(int32_t x, int32_t y)
 	if (mouseButtons.left) {
 		rotation.x += dy * 1.25f * rotationSpeed;
 		rotation.y -= dx * 1.25f * rotationSpeed;
-		camera.rotate(glm::vec3(dy * camera.rotationSpeed, -dx * camera.rotationSpeed, 0.0f));
+		camera.rotate(glm::vec3(-dy * camera.rotationSpeed, -dx * camera.rotationSpeed, 0.0f));
 		viewUpdated = true;
 	}
 	if (mouseButtons.right) {
@@ -2232,8 +2268,8 @@ void VulkanExampleBase::handleMouseMove(int32_t x, int32_t y)
 	}
 	if (mouseButtons.middle) {
 		cameraPos.x -= dx * 0.01f;
-		cameraPos.y -= dy * 0.01f;
-		camera.translate(glm::vec3(-dx * 0.01f, -dy * 0.01f, 0.0f));
+		cameraPos.y += dy * 0.01f;
+		camera.translate(glm::vec3(dx * 0.01f, -dy * 0.01f, 0.0f));
 		viewUpdated = true;
 	}
 	mousePos = glm::vec2((float)x, (float)y);

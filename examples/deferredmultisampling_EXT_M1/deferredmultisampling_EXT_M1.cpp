@@ -1,5 +1,5 @@
 /*
-* Vulkan Example - Multi sampling with explicit resolve for deferred shading example
+* Vulkan Example - Multi sampling with explicit resolve for deferred shading example using Negative Viewport.
 *
 * Copyright (C) 2016 by Sascha Willems - www.saschawillems.de
 *
@@ -127,8 +127,11 @@ public:
 		VkRenderPass renderPass;
 	} offScreenFrameBuf;
 	
-    float move = 0.0f;
-    bool enableInvViewport = true;
+    // Negative viewport
+    float   move = 0.0f;
+    bool    enableInvViewport = true;
+    int32_t windingOrder = 1;
+    int32_t cullMode = (int32_t)VK_CULL_MODE_BACK_BIT;
 
 	// One sampler for the frame buffer color attachments
 	VkSampler colorSampler;
@@ -154,6 +157,8 @@ public:
 
         // Enable extensions
         enabledDeviceExtensions.push_back(VK_KHR_MAINTENANCE1_EXTENSION_NAME);
+
+        move = (float)height;
 	}
 
 	~VulkanExample()
@@ -585,13 +590,13 @@ public:
 
 	void loadAssets()
 	{
-		models.model.loadFromFile(getAssetPath() + "models/armor/armor.dae", vertexLayout, 1.0f, vulkanDevice, queue, vks::Model::defaultCCWFlags, false);
+		models.model.loadFromFile(getAssetPath() + "models/armor/armor.dae", vertexLayout, 1.0f, vulkanDevice, queue, vks::Model::defaultFlags, false);
 
 		vks::ModelCreateInfo modelCreateInfo;
 		modelCreateInfo.scale = glm::vec3(15.0f);
 		modelCreateInfo.uvscale = glm::vec2(8.0f, 8.0f);
 		modelCreateInfo.center = glm::vec3(0.0f, -2.3f, 0.0f);
-		models.floor.loadFromFile(getAssetPath() + "models/openbox.dae", vertexLayout, &modelCreateInfo, vulkanDevice, queue, vks::Model::defaultCCWFlags, false);
+		models.floor.loadFromFile(getAssetPath() + "models/openbox.dae", vertexLayout, &modelCreateInfo, vulkanDevice, queue, vks::Model::defaultFlags, false);
 
 		// Textures
 		std::string texFormatSuffix;
@@ -872,8 +877,8 @@ public:
 		VkPipelineRasterizationStateCreateInfo rasterizationState =
 			vks::initializers::pipelineRasterizationStateCreateInfo(
 				VK_POLYGON_MODE_FILL,
-				VK_CULL_MODE_BACK_BIT,
-				VK_FRONT_FACE_CLOCKWISE,
+                VK_CULL_MODE_NONE + cullMode,
+                windingOrder == 0 ? VK_FRONT_FACE_CLOCKWISE : VK_FRONT_FACE_COUNTER_CLOCKWISE,
 				0);
 
 		VkPipelineColorBlendAttachmentState blendAttachmentState =
@@ -1184,22 +1189,38 @@ public:
 				updateUniformBuffersScreen();
 			}
 
-            if(overlay->checkBox("Use inverted viewport", &enableInvViewport)) {
-                buildCommandBuffers();
-                updateUniformBuffersScreen();
+            if(overlay->header("Viewport")) {
+                if(overlay->checkBox("Use inverted viewport", &enableInvViewport)) {
+                    buildCommandBuffers();
+                    updateUniformBuffersScreen();
+                }
+                if(overlay->sliderFloat("Viewport Y:", &move, -2.0f *(float)height, 2.0f *(float)height)) {
+                    buildCommandBuffers();
+                    updateUniformBuffersScreen();
+                }
             }
-            if (overlay->sliderFloat("Viewport Y:", &move, -2.0f *(float)height, 2.0f *(float)height)) {
-                buildCommandBuffers();
-                updateUniformBuffersScreen();
+            if(overlay->header("Pipeline")) {
+                overlay->text("Winding order");
+                if(overlay->comboBox("##windingorder", &windingOrder, { "clock wise", "counter clock wise" })) {
+                    preparePipelines();
+                    buildCommandBuffers();
+                }
+                overlay->text("Cull mode");
+                if(overlay->comboBox("##cullmode", &cullMode, { "none", "front face", "back face" })) {
+                    preparePipelines();
+                    buildCommandBuffers();
+                }
             }
-			if (overlay->checkBox("MSAA", &useMSAA)) {
-				buildCommandBuffers();
-			}
-			if (vulkanDevice->features.sampleRateShading) {
-				if (overlay->checkBox("Sample rate shading", &useSampleShading)) {
-					buildDeferredCommandBuffer();
-				}
-			}
+            if(overlay->header("Deferred")) {
+                if(overlay->checkBox("MSAA", &useMSAA)) {
+                    buildCommandBuffers();
+                }
+                if(vulkanDevice->features.sampleRateShading) {
+                    if(overlay->checkBox("Sample rate shading", &useSampleShading)) {
+                        buildDeferredCommandBuffer();
+                    }
+                }
+            }
 		}
 	}
 

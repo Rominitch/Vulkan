@@ -61,6 +61,8 @@ private:
 	std::string getWindowTitle();
 	/** brief Indicates that the view (position, rotation) has changed and buffers containing camera matrices need to be updated */
 	bool viewUpdated = false;
+    bool AZERTY_keyboard = false;
+
 	// Destination dimensions for resizing the window
 	uint32_t destWidth;
 	uint32_t destHeight;
