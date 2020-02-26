@@ -71,6 +71,7 @@ set(EXAMPLES
 	inputattachments
 	instancing
 	mesh
+    mousereader
 	multisampling
 	multithreading
 	multiview
