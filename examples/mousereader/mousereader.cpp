@@ -34,6 +34,7 @@
 #define FB_DIM TEX_DIM
 
 //#define DUMP_PPM
+//#define FULL_BUFFER
 
 class VulkanExample : public VulkanExampleBase
 {
@@ -1328,6 +1329,13 @@ public:
 			checkedBlit = true;
 		}
 
+		glm::ivec2 bufferSize(1, 1);
+#ifdef FULL_BUFFER
+		bufferSize = glm::ivec2(offScreenFrameBuf.width, offScreenFrameBuf.height);
+#endif
+        const size_t xPos = (size_t)(mousePos.x * (float)offScreenFrameBuf.width);
+        const size_t yPos = (size_t)(mousePos.y * (float)offScreenFrameBuf.height);
+
         // Source for the copy
         VkImage srcImage = offScreenFrameBuf.meshInfo.image;
 
@@ -1336,8 +1344,8 @@ public:
         imageCreateCI.imageType = VK_IMAGE_TYPE_2D;
         // Note that vkCmdBlitImage (if supported) will also do format conversions if the swapchain color format would differ
         imageCreateCI.format = VK_FORMAT_R32_SINT;
-        imageCreateCI.extent.width  = offScreenFrameBuf.width;
-        imageCreateCI.extent.height = offScreenFrameBuf.height;
+        imageCreateCI.extent.width  = bufferSize.x;
+        imageCreateCI.extent.height = bufferSize.y;
         imageCreateCI.extent.depth = 1;
         imageCreateCI.arrayLayers = 1;
         imageCreateCI.mipLevels = 1;
@@ -1391,8 +1399,8 @@ public:
         {
             // Define the region to blit (we will blit the whole swapchain image)
             VkOffset3D blitSize;
-            blitSize.x = offScreenFrameBuf.width;
-            blitSize.y = offScreenFrameBuf.height;
+            blitSize.x = bufferSize.x;
+            blitSize.y = bufferSize.y;
             blitSize.z = 1;
             VkImageBlit imageBlitRegion{};
             imageBlitRegion.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -1417,10 +1425,14 @@ public:
             VkImageCopy imageCopyRegion{};
             imageCopyRegion.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
             imageCopyRegion.srcSubresource.layerCount = 1;
+#ifndef FULL_BUFFER
+			imageCopyRegion.srcOffset.x = xPos;
+			imageCopyRegion.srcOffset.y = yPos;
+#endif
             imageCopyRegion.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
             imageCopyRegion.dstSubresource.layerCount = 1;
-            imageCopyRegion.extent.width  = offScreenFrameBuf.width;
-            imageCopyRegion.extent.height = offScreenFrameBuf.height;
+            imageCopyRegion.extent.width  = bufferSize.x;
+            imageCopyRegion.extent.height = bufferSize.y;
             imageCopyRegion.extent.depth = 1;
 
             // Issue the copy command
@@ -1469,12 +1481,14 @@ public:
         data += subResourceLayout.offset;
 		
 		// Read value
-		const size_t xPos = (size_t)(mousePos.x * (float)offScreenFrameBuf.width);
-		const size_t yPos = (size_t)(mousePos.y * (float)offScreenFrameBuf.height);
-
+		
+#ifdef FULL_BUFFER
 		int* dataI = (int*)data;
         const size_t index = (size_t)xPos + (subResourceLayout.rowPitch/sizeof(int)) * yPos;
         value = dataI[index];
+#else
+		value = ((int*)data)[0];
+#endif
 
 #ifdef DUMP_PPM
         std::ofstream file("D:\\Demo.ppm", std::ios::out | std::ios::binary);
